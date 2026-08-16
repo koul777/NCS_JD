@@ -182,6 +182,10 @@ class AgentDraftPayload(_ApiModel):
     preferences: list[str] = Field(default_factory=list, max_length=40)
     organization_context: str = Field(default="", max_length=1000)
     template_labels: list[str] = Field(default_factory=list, max_length=40)
+    # An uploaded form the draft should conform to.  When present the server
+    # inspects it for the labels *and* the per-cell sample formatting, so the
+    # agent mirrors that form's house style instead of a fixed one.
+    template: TemplateUploadPayload | None = None
     # Which official CLI drives the loop.  The client picks it explicitly so a
     # person who logged into one provider is not silently run on the other.
     provider: Literal["claude", "codex"] = "claude"
@@ -484,14 +488,46 @@ def create_api_router(
         duties = tuple(dict.fromkeys(item.strip() for item in payload.duties if item.strip()))
         if not duties:
             return _safe_error(422, "duties_required", "직무수행내역을 한 건 이상 확인해 주세요.")
-        labels = tuple(
+
+        # An attached form defines both which cells to fill and how they should
+        # read.  Its inspected labels win over the client-sent ones, and its
+        # per-cell samples become the style the agent mirrors.
+        client_labels = tuple(
             dict.fromkeys(item.strip() for item in payload.template_labels if item.strip())
-        ) or SUPPORTED_TEMPLATE_LABELS
+        )
+        examples: tuple[tuple[str, str], ...] = ()
+        if payload.template is not None and template_inspector is not None:
+            try:
+                hwpx_template = _decode_template(payload.template, max_bytes=max_template_bytes)
+                inspection = await asyncio.to_thread(
+                    template_inspector.inspect_template, hwpx_template
+                )
+            except (InvalidTemplateError, DocumentRenderError, ValueError, binascii.Error):
+                hwpx_template = None
+                inspection = None
+            if inspection is not None:
+                client_labels = template_labels_from_inspection(inspection.fields) or client_labels
+                seen: set[str] = set()
+                pairs: list[tuple[str, str]] = []
+                for field in inspection.fields:
+                    label = " ".join(str(field.label).split())
+                    sample = " ".join(str(field.value_preview).split())
+                    if label and sample and label not in seen:
+                        seen.add(label)
+                        pairs.append((label, sample))
+                examples = tuple(pairs)
+
+        labels = client_labels or SUPPORTED_TEMPLATE_LABELS
         # The classification cells are read back from the units the run adopts,
         # so the agent is neither asked for them nor allowed to return them.
         labels = tuple(
             label
             for label in labels
+            if "".join(label.split()) not in CLASSIFICATION_FIELD_LABELS
+        )
+        examples = tuple(
+            (label, sample)
+            for label, sample in examples
             if "".join(label.split()) not in CLASSIFICATION_FIELD_LABELS
         )
         try:
@@ -504,6 +540,7 @@ def create_api_router(
                 ),
                 preferences=tuple(item.strip() for item in payload.preferences if item.strip()),
                 organization_context=payload.organization_context.strip(),
+                template_examples=examples,
             )
         except ValueError:
             return _safe_error(422, "invalid_agent_request", "에이전트 초안 요청이 올바르지 않습니다.")

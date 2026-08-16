@@ -96,6 +96,11 @@ class AgentDraftRequest:
     qualifications: tuple[str, ...] = ()
     preferences: tuple[str, ...] = ()
     organization_context: str = ""
+    # (label, 그 칸의 예시 서식) pairs lifted from an uploaded form.  When the
+    # form ships filled in, its own cells define how each field should read --
+    # inline-numbered units, flat bullets, a comma paragraph -- and the agent is
+    # told to mirror that exact style rather than impose a fixed one.
+    template_examples: tuple[tuple[str, str], ...] = ()
 
     def __post_init__(self) -> None:
         if not self.job_title.strip():
@@ -240,6 +245,41 @@ def field_value_budget(label_count: int) -> int:
     return max(MAX_FIELD_VALUE_CHARS, MAX_DOCUMENT_CHARS // label_count)
 
 
+def _format_rules(request: AgentDraftRequest) -> str:
+    """Decide the field formatting: mirror the uploaded form, or use a default.
+
+    A form that ships with a worked example defines its own house style per cell
+    -- one lists units inline with numbers, another wants flat bullets, another a
+    comma-joined line.  When those examples are present the agent copies them cell
+    by cell, so the output flexes to whatever form was attached.  With no form,
+    the deterministic-renderer style (○ 세분류 / · 항목) is requested instead.
+    """
+
+    examples = [
+        (label, " ".join(str(sample).split()))
+        for label, sample in request.template_examples
+        if str(sample).strip()
+    ]
+    if not examples:
+        return (
+            "[작성 서식 — 기본형]\n"
+            "- 능력단위·직무수행내용·필요지식·필요기술·직무수행태도는 세분류별로 묶어 쓰세요. "
+            "각 세분류를 '○ (세분류명)' 줄로 시작하고, 그 아래 항목마다 '· '로 시작하는 줄로 적습니다.\n"
+            "\n"
+        )
+    lines = [
+        "[작성 서식 — 붙임 양식을 그대로 따르세요]\n",
+        "- 아래는 업로드된 양식의 각 항목 예시입니다. 각 항목의 value를 반드시 해당 예시와 "
+        "똑같은 서식·표기(번호/기호/줄바꿈/나열 방식)로 작성하세요. 내용은 이 직무의 NCS 근거로 "
+        "바꾸되 서식만 그대로 흉내 냅니다.\n",
+        "- 예시가 없는 항목은 위 다른 항목의 서식을 참고해 일관되게 작성하세요.\n",
+    ]
+    for label, sample in examples:
+        lines.append(f"  · [{label}] 예시 서식: {sample[:300]}\n")
+    lines.append("\n")
+    return "".join(lines)
+
+
 def agent_draft_prompt(request: AgentDraftRequest) -> str:
     """Render the Korean instruction for the tool-using agent loop.
 
@@ -284,16 +324,15 @@ def agent_draft_prompt(request: AgentDraftRequest) -> str:
         "맞지 않으면 제외하세요.\n"
         "5. 세분류는 최대 3개까지만 채택하세요. 능력단위는 총 25개를 넘기지 마세요.\n"
         "\n"
-        "[작성 규칙 — 아래 서식을 그대로 따르세요]\n"
+        + _format_rules(request)
+        + "[공통 작성 규칙]\n"
         "- '작성할_양식_항목'의 각 항목을 채웁니다. 항목명을 바꾸거나 추가하지 마세요.\n"
         "- 채용분야 항목의 value에는 직무명만 넣으세요. 분류체계·세분류 정의·채택 사유 같은 "
         "설명 문장을 채용분야 칸에 넣지 마세요(그런 내용은 비고/근거에).\n"
-        "- 능력단위·직무수행내용·필요지식·필요기술·직무수행태도는 세분류별로 묶어 쓰세요. "
-        "각 세분류를 '○ (세분류명)' 줄로 시작하고, 그 아래 항목마다 '· '로 시작하는 줄로 적습니다.\n"
         "- 능력단위 value에는 능력단위 이름만 적고 능력단위 코드나 일련번호를 넣지 마세요.\n"
-        "- 필요지식·필요기술·직무수행태도는 KSA 원문 표현을 유지하되, 세분류별로 대표 항목만 "
-        "간결히 추리고 유사·중복 표현은 하나로 합치세요. 수십 개를 한 줄에 이어붙이지 마세요.\n"
-        "- 능력단위 코드는 오직 비고/근거 항목에만, '○ 세분류명(대-중-소-세) : 코드, 코드' 형식으로 "
+        "- 필요지식·필요기술·직무수행태도는 KSA 원문 표현을 유지하되 대표 항목만 간결히 추리고 "
+        "유사·중복 표현은 하나로 합치세요.\n"
+        "- 능력단위 코드는 오직 비고/근거 항목에만 '세분류명(대-중-소-세) : 코드, 코드' 형식으로 "
         "적습니다. ref-unit 같은 내부 식별자는 어떤 항목에도 절대 쓰지 마세요.\n"
         "- 직업기초능력은 NCS DB에서 도출되지 않습니다. 선정하되 'KSA에서 직접 도출된 항목이 "
         "아님'을 해당 값 안에 명시하세요.\n"

@@ -102,6 +102,32 @@ def test_prompt_states_the_budget_so_the_agent_can_stay_inside_it() -> None:
     assert str(field_value_budget(3)) in agent_draft_prompt(request)
 
 
+def test_prompt_defaults_to_the_grouped_style_without_a_form() -> None:
+    prompt = agent_draft_prompt(_request())
+
+    assert "기본형" in prompt
+    assert "'○ (세분류명)'" in prompt
+    assert "붙임 양식을 그대로 따르세요" not in prompt
+
+
+def test_prompt_mirrors_an_uploaded_form_style_when_examples_are_present() -> None:
+    request = _request(
+        template_labels=("능력 단위", "필요 지식"),
+        template_examples=(
+            ("능력 단위", "○ (전기설비운영) 01.수전설비 운영 03.변전설비 운영"),
+            ("필요 지식", "·전기도면 지식\n·차단기의 종류 및 특성"),
+        ),
+    )
+    prompt = agent_draft_prompt(request)
+
+    # The form's own cell samples become the style the agent must mirror.
+    assert "붙임 양식을 그대로 따르세요" in prompt
+    assert "01.수전설비 운영" in prompt
+    assert "·전기도면 지식" in prompt
+    # The fixed ○/· default is not imposed on top of the form's style.
+    assert "[작성 서식 — 기본형]" not in prompt
+
+
 def test_validate_truncates_an_oversized_field_instead_of_discarding_the_run() -> None:
     request = _request(template_labels=("담당업무",))
     budget = field_value_budget(1)
