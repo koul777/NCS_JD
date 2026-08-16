@@ -1,0 +1,10 @@
+{
+  "name": "ncs-jd-kordoc-runtime",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "kordoc": "4.2.9",
+    "pdfjs-dist": "4.10.38"
+  }
+}

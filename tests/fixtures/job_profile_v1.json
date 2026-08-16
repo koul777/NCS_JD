@@ -1,0 +1,180 @@
+{
+  "schema": "ncs_job_profile_v1",
+  "document_id": "1a55708f-2c1e-4f92-a48e-4f3455c6543a",
+  "document_status": "draft",
+  "created_at": "2026-08-13T08:00:00Z",
+  "updated_at": "2026-08-13T08:00:00Z",
+  "source_snapshot": {
+    "mcp_url_label": "local-ncs-mcp",
+    "retrieved_at": "2026-08-13T08:00:00Z",
+    "selected_unit_codes": ["0202020103_23v4"]
+  },
+  "scope_selection": {
+    "organization_job_title": "채용 담당자",
+    "classification_paths": [
+      {
+        "major_code": "02",
+        "middle_code": "02",
+        "small_code": "02",
+        "sub_code": "01",
+        "label": "경영·회계·사무 > 총무·인사 > 인사·조직 > 인사"
+      }
+    ],
+    "included_units": [
+      {
+        "unit_code": "0202020103_23v4",
+        "unit_name": "인력채용",
+        "unit_level": "5",
+        "selection_reason": "사용자 선택"
+      }
+    ],
+    "excluded_unit_codes": ["0202020104_23v4"],
+    "excluded_task_terms": ["교육훈련"],
+    "target_level_input": "대리"
+  },
+  "job_description": {
+    "job_title": {
+      "text": "채용 담당자",
+      "origin": "organization_input",
+      "source_refs": []
+    },
+    "job_purpose": {
+      "text": "조직의 채용 계획에 따라 인력채용 업무를 수행하는 초안",
+      "origin": "mixed",
+      "source_refs": ["ref-classification-1", "ref-unit-1"]
+    },
+    "duties": [
+      {
+        "id": "duty-1",
+        "title": "인력채용",
+        "summary": "선택한 인력채용 능력단위를 바탕으로 채용 업무를 수행한다.",
+        "origin": "ncs_direct",
+        "source_refs": ["ref-unit-1"]
+      }
+    ],
+    "tasks": [
+      {
+        "id": "task-1",
+        "duty_id": "duty-1",
+        "title": "채용 계획 수립",
+        "description": "채용 필요 인력과 절차를 검토한다.",
+        "origin": "ncs_direct",
+        "source_refs": ["ref-element-1", "ref-criteria-1"]
+      }
+    ],
+    "responsibilities": [
+      {
+        "text": "승인된 채용 일정의 진행 상황을 관리한다.",
+        "origin": "organization_input",
+        "source_refs": []
+      }
+    ],
+    "decision_authority": [],
+    "kpis": [],
+    "collaboration": [],
+    "reporting_relationships": []
+  },
+  "person_specification": {
+    "target_level": {
+      "organization_value": "대리",
+      "ncs_level_references": ["5"],
+      "mapping_status": "not_equated"
+    },
+    "knowledge": [
+      {
+        "id": "ksa-1",
+        "text": "채용 절차에 관한 지식",
+        "type": "knowledge",
+        "origin": "ncs_direct",
+        "requiredness": "review_required",
+        "source_refs": ["ref-ksa-1"]
+      }
+    ],
+    "skills": [],
+    "attitudes": [],
+    "experience_requirements": [],
+    "education_requirements": [],
+    "qualification_requirements": [],
+    "preference_requirements": [],
+    "qualification_references": [],
+    "job_base_references": []
+  },
+  "references": [
+    {
+      "ref_id": "ref-classification-1",
+      "source_system": "NCS_MCP",
+      "source_type": "classification",
+      "source_id": "02020201",
+      "unit_code": null,
+      "element_id": null,
+      "field": "duty_def_api",
+      "evidence_grade": "direct",
+      "text_preview": "인사는 조직의 인적자원을 효과적으로 관리하는 업무이다.",
+      "retrieved_at": "2026-08-13T08:00:00Z"
+    },
+    {
+      "ref_id": "ref-unit-1",
+      "source_system": "NCS_MCP",
+      "source_type": "competency_unit",
+      "source_id": "0202020103_23v4",
+      "unit_code": "0202020103_23v4",
+      "element_id": null,
+      "field": "unit_definition",
+      "evidence_grade": "direct",
+      "text_preview": "조직에 필요한 인력을 채용하는 능력이다.",
+      "retrieved_at": "2026-08-13T08:00:00Z"
+    },
+    {
+      "ref_id": "ref-element-1",
+      "source_system": "NCS_MCP",
+      "source_type": "competency_element",
+      "source_id": "element-1",
+      "unit_code": "0202020103_23v4",
+      "element_id": "element-1",
+      "field": "element_name",
+      "evidence_grade": "direct",
+      "text_preview": "채용계획 수립하기",
+      "retrieved_at": "2026-08-13T08:00:00Z"
+    },
+    {
+      "ref_id": "ref-criteria-1",
+      "source_system": "NCS_MCP",
+      "source_type": "performance_criterion",
+      "source_id": "criteria-1",
+      "unit_code": "0202020103_23v4",
+      "element_id": "element-1",
+      "field": "criteria_text_raw",
+      "evidence_grade": "direct",
+      "text_preview": "채용 필요 인력을 파악할 수 있다.",
+      "retrieved_at": "2026-08-13T08:00:00Z"
+    },
+    {
+      "ref_id": "ref-ksa-1",
+      "source_system": "NCS_MCP",
+      "source_type": "ksa_item",
+      "source_id": "ksa-1",
+      "unit_code": "0202020103_23v4",
+      "element_id": "element-1",
+      "field": "ksa_text_raw",
+      "evidence_grade": "direct",
+      "text_preview": "채용 절차에 관한 지식",
+      "retrieved_at": "2026-08-13T08:00:00Z"
+    }
+  ],
+  "review_flags": [
+    {
+      "code": "organization_kpi_missing",
+      "severity": "info",
+      "section": "job_description.kpis",
+      "message": "NCS는 조직 고유 KPI를 제공하지 않습니다. 조직 입력이 필요합니다.",
+      "source_refs": []
+    },
+    {
+      "code": "ncs_level_not_equal_to_org_grade",
+      "severity": "info",
+      "section": "person_specification.target_level",
+      "message": "NCS 수준과 조직 직급은 자동으로 동일시하지 않습니다.",
+      "source_refs": ["ref-unit-1"]
+    }
+  ]
+}

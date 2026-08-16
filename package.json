@@ -1,0 +1,12 @@
+{
+  "name": "ncs-jd-kordoc-bridge",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "kordoc": "4.2.9"
+  }
+}

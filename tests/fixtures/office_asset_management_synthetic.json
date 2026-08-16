@@ -1,0 +1,107 @@
+{
+  "fixture_metadata": {
+    "synthetic": true,
+    "unit_codes_are_real_ncs_codes": false,
+    "runtime_source_note": "실행 시 실제 분류·능력단위 근거는 읽기 전용 NCS MCP에서 다시 조회해야 합니다.",
+    "provenance_note": "가상의 직무·공고 문구입니다. 실제 채용공고문에서 가져온 내용이 아닙니다."
+  },
+  "job_title": "총무·자산관리 담당자",
+  "recruitment_reason": "청사 시설물과 비품·물품 자산을 체계적으로 관리하고 계약·검수 실무를 수행할 인력이 필요함.",
+  "duties": [
+    "비품·물품 취득 및 등록 관리",
+    "자산 실사와 대장 정비, 불용품 처분 업무",
+    "사무공간 배치 및 청사 운영 지원",
+    "물품 구매 계약 체결과 검수·정산 업무",
+    "제반 업무 관련 기본계획 수립, 결과보고 등 행정업무",
+    "기타 소속부서에서 부여한 각종 업무"
+  ],
+  "qualification_requirements": [
+    "관련 분야 석사학위 취득자",
+    "관련 분야 학사학위 취득 후 2년 이상 관련 경력 있는 자",
+    "관련 분야 6년 이상 관련 경력 있는 자",
+    "기관 인사규정에 따른 임용 결격 사유가 없는 자"
+  ],
+  "preference_requirements": [
+    "물류관리사, 회계관리 2급 이상 자격 소지자",
+    "공공기관 계약·물품 관리 업무 경험자",
+    "취업 지원 대상자, 장애인, 비수도권 인재, 청년"
+  ],
+  "classification_paths": [
+    {
+      "major_code": "FIXTURE-07",
+      "middle_code": "FIXTURE-02",
+      "small_code": "FIXTURE-02",
+      "sub_code": "FIXTURE-01",
+      "label": "합성 경영지원 > 합성 총무 > 합성 자산관리 > 합성 물품관리"
+    },
+    {
+      "major_code": "FIXTURE-04",
+      "middle_code": "FIXTURE-02",
+      "small_code": "FIXTURE-01",
+      "sub_code": "FIXTURE-02",
+      "label": "합성 경영지원 > 합성 구매조달 > 합성 계약관리 > 합성 검수정산"
+    }
+  ],
+  "units": [
+    {
+      "unit_code": "FIXTURE-NOT-NCS-ASSET-REGISTER",
+      "unit_name": "물품 취득 및 등록",
+      "unit_level": "5",
+      "unit_definition": "물품을 취득하고 자산대장에 등록·관리하는 능력",
+      "classification_path": "FIXTURE-07 > FIXTURE-02 > FIXTURE-02 > FIXTURE-01",
+      "duty_definition": "비품과 물품을 취득하여 대장에 등록하고 변동 내역을 관리하는 일",
+      "elements": [
+        {
+          "element_id": "FIXTURE-E-REGISTER",
+          "element_name": "자산대장 등록",
+          "criteria": [{"criteria_id": "FIXTURE-C-REGISTER", "criteria_text_raw": "취득한 물품의 규격과 수량을 확인하고 자산대장에 등록할 수 있다."}],
+          "ksa": [
+            {"ksa_id": "FIXTURE-K-REGISTER", "ksa_type": "knowledge", "ksa_text_raw": "물품관리 규정과 자산 분류에 관한 지식"},
+            {"ksa_id": "FIXTURE-S-REGISTER", "ksa_type": "skill", "ksa_text_raw": "자산대장 작성 및 변동 이력 관리 기술"},
+            {"ksa_id": "FIXTURE-A-REGISTER", "ksa_type": "attitude", "ksa_text_raw": "공용 자산을 정확하고 투명하게 다루는 태도"}
+          ]
+        }
+      ]
+    },
+    {
+      "unit_code": "FIXTURE-NOT-NCS-ASSET-AUDIT",
+      "unit_name": "자산 실사 및 불용처분",
+      "unit_level": "5",
+      "unit_definition": "자산 실사를 수행하고 불용품 처분 절차를 진행하는 능력",
+      "classification_path": "FIXTURE-07 > FIXTURE-02 > FIXTURE-02 > FIXTURE-01",
+      "duty_definition": "보유 자산의 현황을 실사하고 불용 자산의 처분을 처리하는 일",
+      "elements": [
+        {
+          "element_id": "FIXTURE-E-AUDIT",
+          "element_name": "자산 실사 수행",
+          "criteria": [{"criteria_id": "FIXTURE-C-AUDIT", "criteria_text_raw": "실사 계획에 따라 현물과 대장을 대조하고 차이를 정리할 수 있다."}],
+          "ksa": [
+            {"ksa_id": "FIXTURE-K-AUDIT", "ksa_type": "knowledge", "ksa_text_raw": "자산 실사 절차와 불용 처분 기준에 관한 지식"},
+            {"ksa_id": "FIXTURE-S-AUDIT", "ksa_type": "skill", "ksa_text_raw": "현물 대조 및 차이 원인 정리 기술"},
+            {"ksa_id": "FIXTURE-A-AUDIT", "ksa_type": "attitude", "ksa_text_raw": "실사 결과를 있는 그대로 기록하는 태도"}
+          ]
+        }
+      ]
+    },
+    {
+      "unit_code": "FIXTURE-NOT-NCS-CONTRACT-INSPECT",
+      "unit_name": "구매계약 검수정산",
+      "unit_level": "5",
+      "unit_definition": "구매 계약을 체결하고 납품 검수와 대금 정산을 수행하는 능력",
+      "classification_path": "FIXTURE-04 > FIXTURE-02 > FIXTURE-01 > FIXTURE-02",
+      "duty_definition": "물품 구매 계약을 체결하고 납품물을 검수하여 대금을 정산하는 일",
+      "elements": [
+        {
+          "element_id": "FIXTURE-E-INSPECT",
+          "element_name": "납품 검수 및 정산",
+          "criteria": [{"criteria_id": "FIXTURE-C-INSPECT", "criteria_text_raw": "계약 조건과 납품물을 대조하여 검수조서를 작성하고 정산을 요청할 수 있다."}],
+          "ksa": [
+            {"ksa_id": "FIXTURE-K-INSPECT", "ksa_type": "knowledge", "ksa_text_raw": "공공 계약 절차와 검수 기준에 관한 지식"},
+            {"ksa_id": "FIXTURE-S-INSPECT", "ksa_type": "skill", "ksa_text_raw": "검수조서 작성 및 정산 서류 처리 기술"},
+            {"ksa_id": "FIXTURE-A-INSPECT", "ksa_type": "attitude", "ksa_text_raw": "계약 상대방을 공정하게 대하는 태도"}
+          ]
+        }
+      ]
+    }
+  ]
+}

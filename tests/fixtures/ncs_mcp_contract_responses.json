@@ -1,0 +1,204 @@
+{
+  "search": {
+    "ok": true,
+    "error": null,
+    "results": [
+      {
+        "type": "unit",
+        "id": "0202020104_23v4",
+        "text": "인사평가",
+        "path": {
+          "major_code": "02",
+          "major": "경영·회계·사무",
+          "middle_code": "02",
+          "middle": "총무·인사",
+          "small_code": "02",
+          "small": "인사·조직",
+          "sub_code": "01",
+          "sub": "인사",
+          "duty_definition": "인적자원을 관리한다.",
+          "reviewed": true
+        },
+        "api_definition": "인사평가를 수행하는 능력",
+        "unknown_future_field": "ignored"
+      },
+      {
+        "type": "criteria",
+        "id": 901,
+        "text": "채용계획을 수립할 수 있다.",
+        "path": {
+          "unit_code": "0202020103_23v4",
+          "unit_name": "인력채용",
+          "element_id": 31,
+          "element_name": "채용계획 수립하기"
+        },
+        "review_status": "accepted"
+      },
+      {
+        "type": "unit",
+        "id": "0202020103_23v4",
+        "text": "인력채용",
+        "path": {
+          "major_code": "02",
+          "major": "경영·회계·사무",
+          "middle_code": "02",
+          "middle": "총무·인사",
+          "small_code": "02",
+          "small": "인사·조직",
+          "sub_code": "01",
+          "sub": "인사",
+          "duty_definition": "인적자원을 관리한다."
+        },
+        "unit_level": "5",
+        "api_definition": "조직에 필요한 인력을 채용하는 능력",
+        "human_reviewed": true,
+        "source_payload": {"must": "not pass through"}
+      }
+    ],
+    "audit": {
+      "generated_at": "2026-08-13T08:00:00Z",
+      "data_sources": ["competency_units"]
+    }
+  },
+  "empty_search": {
+    "ok": false,
+    "error": {
+      "code": "NOT_FOUND",
+      "message": "no results"
+    },
+    "data": null,
+    "audit": {
+      "generated_at": "2026-08-13T08:00:00Z"
+    }
+  },
+  "unit_detail": {
+    "ok": true,
+    "error": null,
+    "unit": {
+      "unit_code": "0202020103_23v4",
+      "unit_name": "인력채용",
+      "unit_level": "5",
+      "classification": {
+        "major": "경영·회계·사무",
+        "middle": "총무·인사",
+        "small": "인사·조직",
+        "sub": "인사",
+        "duty_definition": "인적자원을 관리한다.",
+        "accepted": true
+      },
+      "api_definition": "조직에 필요한 인력을 채용하는 능력",
+      "api_match_status": "matched",
+      "review_status": "accepted"
+    },
+    "elements": [
+      {
+        "element_id": 32,
+        "element_name": "채용 실행하기",
+        "performance_criteria": [
+          {
+            "criteria_id": 202,
+            "text": "지원자를 평가할 수 있다.",
+            "criteria_text_refined": "사용하지 않는 재서술",
+            "review_status": "reviewed"
+          }
+        ],
+        "ksa": [
+          {
+            "ksa_id": 302,
+            "ksa_type": "기술",
+            "text": "면접 평가 기술",
+            "review_status": "accepted"
+          }
+        ],
+        "human_reviewed": true
+      },
+      {
+        "element_id": 31,
+        "element_name": "채용계획 수립하기",
+        "performance_criteria": [
+          {
+            "criteria_id": 201,
+            "criteria_text_raw": "채용계획을 수립할 수 있다.",
+            "text": "채용계획을 수립할 수 있다.",
+            "accepted": true
+          }
+        ],
+        "ksa": [
+          {
+            "ksa_id": 301,
+            "ksa_type": "지식",
+            "ksa_text_raw": "채용 절차에 관한 지식",
+            "text": "채용 절차에 관한 지식",
+            "reviewed": true,
+            "unknown_future_field": "ignored"
+          }
+        ],
+        "source_payload": {"must": "not pass through"}
+      }
+    ],
+    "audit": {
+      "generated_at": "2026-08-13T08:00:00Z",
+      "data_sources": ["ksa_items", "competency_units", "performance_criteria", "ksa_items"]
+    },
+    "source_payload": {"must": "not pass through"}
+  },
+  "partial_unit_detail": {
+    "ok": true,
+    "error": null,
+    "unit": {
+      "unit_code": "0202020103_23v4",
+      "unit_name": "인력채용",
+      "unit_level": "5",
+      "api_definition": "조직에 필요한 인력을 채용하는 능력"
+    },
+    "elements": [
+      {
+        "element_id": 31,
+        "element_name": "채용계획 수립하기",
+        "performance_criteria": [],
+        "ksa": [
+          {
+            "ksa_id": 303,
+            "ksa_type": "unsupported-type",
+            "text": "분류할 수 없는 원문"
+          }
+        ]
+      },
+      {
+        "element_id": 32,
+        "element_name": "채용 실행하기"
+      }
+    ],
+    "audit": {
+      "generated_at": "not-a-timestamp"
+    }
+  },
+  "qualification": {
+    "ok": true,
+    "error": null,
+    "qualification_links": [
+      {
+        "link_id": 42,
+        "unit_code": "0202020103_23v4",
+        "jm_cd": "Q-100",
+        "jm_nm": "직업상담사",
+        "review_status": "accepted",
+        "unknown_future_field": "ignored"
+      }
+    ]
+  },
+  "job_base": {
+    "ok": true,
+    "error": null,
+    "job_base_links": [
+      {
+        "link_id": 52,
+        "unit_code": "0202020103_23v4",
+        "job_base_competency_id": 3,
+        "competency_name": "의사소통능력",
+        "factor_name": "경청능력",
+        "human_reviewed": true
+      }
+    ]
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "name": "ncs-jd-demo-video",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "generate-audio": "node scripts/generate-audio.mjs",
+    "prestudio": "npm run generate-audio",
+    "studio": "remotion studio src/index.tsx",
+    "prerender": "npm run generate-audio",
+    "render": "remotion render src/index.tsx NcsJdDemo ../reports/demo/ncs-jd-demo.mp4 --codec=h264 --crf=18 --audio-codec=aac",
+    "render:clips": "remotion render src/index.tsx NcsJdDemo ../reports/demo/ncs-jd-input.mp4 --codec=h264 --crf=20 --audio-codec=aac --frames=180-479 && remotion render src/index.tsx NcsJdDemo ../reports/demo/ncs-jd-evidence.mp4 --codec=h264 --crf=20 --audio-codec=aac --frames=540-1109 && remotion render src/index.tsx NcsJdDemo ../reports/demo/ncs-jd-result.mp4 --codec=h264 --crf=20 --audio-codec=aac --frames=1140-1319",
+    "render:previews": "remotion render src/index.tsx NcsJdDemo ../reports/demo/ncs-jd-input.gif --codec=gif --frames=180-479 --scale=0.4 --every-nth-frame=3 && remotion render src/index.tsx NcsJdDemo ../reports/demo/ncs-jd-evidence.gif --codec=gif --frames=540-1109 --scale=0.4 --every-nth-frame=3 && remotion render src/index.tsx NcsJdDemo ../reports/demo/ncs-jd-result.gif --codec=gif --frames=1140-1319 --scale=0.4 --every-nth-frame=3",
+    "prestill": "npm run generate-audio",
+    "still": "remotion still src/index.tsx NcsJdDemo ../reports/demo/ncs-jd-demo-cover.png --frame=90"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.512",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "remotion": "4.0.512"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "typescript": "^5.9.0"
+  }
+}

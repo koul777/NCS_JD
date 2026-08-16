@@ -1,0 +1,144 @@
+{
+  "fixture_metadata": {
+    "synthetic": true,
+    "unit_codes_are_real_ncs_codes": false,
+    "purpose": "전기시설 유지보수 결정적 조립기 회귀 테스트 전용",
+    "runtime_source_note": "실제 운영 코드는 이 fixture가 아니라 NCS MCP가 반환한 UnitEvidenceBundle을 사용한다."
+  },
+  "classification_paths": [
+    {
+      "major_code": "19",
+      "middle_code": "01",
+      "small_code": "07",
+      "sub_code": "01",
+      "label": "전기·전자 > 전기 > 전기공사 > 내선공사"
+    },
+    {
+      "major_code": "15",
+      "middle_code": "05",
+      "small_code": "01",
+      "sub_code": "07",
+      "label": "기계 > 기계장치설치 > 기계장비설치·정비 > 승강기설치·정비"
+    },
+    {
+      "major_code": "05",
+      "middle_code": "02",
+      "small_code": "01",
+      "sub_code": "04",
+      "label": "법률·경찰·소방·교도·국방 > 소방방재 > 소방 > 소방안전관리"
+    }
+  ],
+  "units": [
+    {
+      "unit_code": "FIXTURE-NOT-NCS-INTERNAL-WIRING-001",
+      "unit_name": "내선 설비 점검 합성 단위",
+      "unit_level": "fixture-level-1",
+      "unit_definition": "내선 설비의 상태를 점검하는 합성 능력 정의",
+      "classification_path": "19 > 01 > 07 > 01",
+      "duty_definition": "내선 설비 상태를 확인한다.",
+      "elements": [
+        {
+          "element_id": "FIXTURE-IW-E1",
+          "element_name": "내선 설비 상태 확인하기",
+          "criteria": [
+            {
+              "criteria_id": "FIXTURE-IW-C1",
+              "criteria_text_raw": "내선 설비의 점검 항목을 확인할 수 있다."
+            }
+          ],
+          "ksa": [
+            {
+              "ksa_id": "FIXTURE-IW-K1",
+              "ksa_type": "knowledge",
+              "ksa_text_raw": "내선 설비 점검 항목 지식"
+            },
+            {
+              "ksa_id": "FIXTURE-IW-S1",
+              "ksa_type": "skill",
+              "ksa_text_raw": "내선 설비 상태 확인 기술"
+            },
+            {
+              "ksa_id": "FIXTURE-IW-A1",
+              "ksa_type": "attitude",
+              "ksa_text_raw": "점검 절차를 준수하는 태도"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "unit_code": "FIXTURE-NOT-NCS-ELEVATOR-002",
+      "unit_name": "승강기 상태 점검 합성 단위",
+      "unit_level": "fixture-level-2",
+      "unit_definition": "승강기 설비의 상태를 점검하는 합성 능력 정의",
+      "classification_path": "15 > 05 > 01 > 07",
+      "duty_definition": "승강기 설비 상태를 확인한다.",
+      "elements": [
+        {
+          "element_id": "FIXTURE-EL-E1",
+          "element_name": "승강기 설비 상태 확인하기",
+          "criteria": [
+            {
+              "criteria_id": "FIXTURE-EL-C1",
+              "criteria_text_raw": "승강기 설비의 점검 항목을 확인할 수 있다."
+            }
+          ],
+          "ksa": [
+            {
+              "ksa_id": "FIXTURE-EL-K1",
+              "ksa_type": "knowledge",
+              "ksa_text_raw": "승강기 설비 점검 항목 지식"
+            },
+            {
+              "ksa_id": "FIXTURE-EL-S1",
+              "ksa_type": "skill",
+              "ksa_text_raw": "승강기 설비 상태 확인 기술"
+            },
+            {
+              "ksa_id": "FIXTURE-EL-A1",
+              "ksa_type": "attitude",
+              "ksa_text_raw": "승강기 점검 순서를 준수하는 태도"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "unit_code": "FIXTURE-NOT-NCS-FIRE-SAFETY-003",
+      "unit_name": "소방 설비 점검 합성 단위",
+      "unit_level": "fixture-level-3",
+      "unit_definition": "소방 설비의 상태를 점검하는 합성 능력 정의",
+      "classification_path": "05 > 02 > 01 > 04",
+      "duty_definition": "소방 설비 상태를 확인한다.",
+      "elements": [
+        {
+          "element_id": "FIXTURE-FS-E1",
+          "element_name": "소방 설비 상태 확인하기",
+          "criteria": [
+            {
+              "criteria_id": "FIXTURE-FS-C1",
+              "criteria_text_raw": "소방 설비의 점검 항목을 확인할 수 있다."
+            }
+          ],
+          "ksa": [
+            {
+              "ksa_id": "FIXTURE-FS-K1",
+              "ksa_type": "knowledge",
+              "ksa_text_raw": "소방 설비 점검 항목 지식"
+            },
+            {
+              "ksa_id": "FIXTURE-FS-S1",
+              "ksa_type": "skill",
+              "ksa_text_raw": "소방 설비 상태 확인 기술"
+            },
+            {
+              "ksa_id": "FIXTURE-FS-A1",
+              "ksa_type": "attitude",
+              "ksa_text_raw": "소방 점검 절차를 준수하는 태도"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
