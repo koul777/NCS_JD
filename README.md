@@ -7,7 +7,6 @@
 </p>
 
 <p align="center">
-  <strong><a href="reports/demo/ncs-jd-demo.mp4">▶ 50초 홍보 영상 보기</a></strong><br>
   공고문 입력부터 NCS 근거 매칭, source_ref 검토, HWPX 초안 생성까지
 </p>
 
@@ -21,8 +20,6 @@
   </a>
 </p>
 
-<p align="center"><strong><a href="reports/demo/ncs-jd-input.mp4">▶ 입력 화면 MP4로 보기</a></strong></p>
-
 ### 2. NCS 세분류·능력단위·근거 연결
 
 <p align="center">
@@ -31,8 +28,6 @@
   </a>
 </p>
 
-<p align="center"><strong><a href="reports/demo/ncs-jd-evidence.mp4">▶ NCS 근거 연결 화면 MP4로 보기</a></strong></p>
-
 ### 3. 예시 양식 반영과 HWPX 결과
 
 <p align="center">
@@ -40,8 +35,6 @@
     <img src="reports/demo/ncs-jd-result.gif" alt="예시 양식 반영과 HWPX 결과 실행 화면" width="100%">
   </a>
 </p>
-
-<p align="center"><strong><a href="reports/demo/ncs-jd-result.mp4">▶ HWPX 결과 화면 MP4로 보기</a></strong></p>
 
 > 위 영상은 가상의 행정직 공고문에서 직무수행내용을 추출하고, NCS 사무행정 근거와 예시 양식을 반영해 직무기술서를 만드는 흐름을 Remotion으로 시연합니다. 결과물은 항상 검토용 `draft`이며 채용 결정이나 공식 자격 판정 자료가 아닙니다.
 
