@@ -436,6 +436,7 @@
           organization_context: reviewContext?.value?.trim() || "",
           template_labels: agentLabels,
           provider: selectedEngine(),
+          ...(agentTemplate ? { template: agentTemplate } : {}),
         }),
       });
       if (!response.ok) {
@@ -510,6 +511,11 @@
     showSchema(null);
     if (!template) return;
     setStatus("올린 양식의 항목을 읽고 있습니다.");
+    const templatePayload = {
+      filename: template.name,
+      content_base64: await toBase64(template),
+    };
+    agentTemplate = templatePayload;
     const body = new FormData();
     body.append("template", template, template.name);
     const response = await fetch("/api/template/schema", { method: "POST", body });
