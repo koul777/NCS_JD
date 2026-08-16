@@ -165,6 +165,29 @@ def test_usage_limit_is_classified_from_stderr() -> None:
     assert exc.value.code == "llm_usage_exhausted"
 
 
+def test_rate_limit_that_truncates_the_result_reports_usage_exhausted() -> None:
+    """A mid-run rate limit leaves no final JSON; say so, don't blame parsing."""
+
+    def launcher(args: list[str], **kwargs: Any) -> _FakeProcess:
+        # The provider throttles mid-run, then the stream ends cleanly (exit 0)
+        # with no valid answer -- exactly the shape a truncated run leaves.
+        return _FakeProcess(
+            [
+                _tool_line("mcp__ncs__ncs_search", "수변전설비"),
+                json.dumps({"type": "rate_limit_event"}),
+            ]
+        )
+
+    runner = CliAgentDraftRunner(
+        _server(),
+        executable_resolver=lambda name: "C:/tools/claude.exe",
+        launcher=launcher,
+    )
+    with pytest.raises(AgentDraftError) as exc:
+        runner.run_draft(_request())
+    assert exc.value.code == "llm_usage_exhausted"
+
+
 def test_json_inside_a_code_fence_is_accepted() -> None:
     fenced = '```json\n{"fields":[{"label":"채용분야","value":"가"}],"unit_codes":[],"notes":[]}\n```'
     payload = _decode_final_json(fenced)

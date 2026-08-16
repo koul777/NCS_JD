@@ -148,6 +148,7 @@ class _ClaudeDialect:
     ) -> str | None:
         event_type = event.get("type")
         if event_type == "rate_limit_event":
+            stats.rate_limited = True
             emit.send("notice", "제공자 사용량 제한으로 대기 중입니다")
             return None
         if event_type == "result":
@@ -407,6 +408,10 @@ class CliAgentDraftRunner:
             raise _classify_failure(
                 "\n".join(part for part in (final_text, stats.failure_text, stderr) if part)
             )
+        # A usage limit that truncates the run leaves no valid final JSON.  Report
+        # the limit -- which the person can act on -- rather than a parse error.
+        if stats.rate_limited and (not final_text or not _is_decodable_json(final_text)):
+            raise AgentDraftError("llm_usage_exhausted")
         if not final_text:
             raise AgentDraftError("agent_produced_no_result")
 
@@ -446,6 +451,10 @@ class _RunStats:
     # here a usage limit or an expired login would be classified as a generic
     # provider failure and the person would be told nothing actionable.
     failure_text: str = ""
+    # A usage/rate limit was hit mid-run.  When the limit truncates the final
+    # message, the result is missing or unparseable; without this flag that reads
+    # as a generic "couldn't parse" error instead of the actionable usage limit.
+    rate_limited: bool = False
 
 
 class _ProgressEmitter:
@@ -491,6 +500,16 @@ def _describe_input(value: object) -> str:
             suffix = f" (limit {limit})" if isinstance(limit, int) else ""
             return f"{item.strip()}{suffix}"
     return ""
+
+
+def _is_decodable_json(text: str) -> bool:
+    """Whether the final message holds a parseable JSON object at all."""
+
+    try:
+        _decode_final_json(text)
+    except AgentDraftError:
+        return False
+    return True
 
 
 def _decode_final_json(text: str) -> Mapping[str, Any]:
