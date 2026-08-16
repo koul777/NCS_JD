@@ -276,6 +276,37 @@ def job_profile_to_markdown(profile: JobProfile) -> str:
     return "\n".join(lines) + "\n"
 
 
+# The standard NCS 채용 직무 설명자료 form lays its rows out in this order, with
+# the classification block right below 채용분야.  The agent returns fields in its
+# own order (classification last), so rows are reordered to the form even when the
+# classification stays a slash-joined line rather than a merged grid.
+_STANDARD_FIELD_ORDER = (
+    "채용분야",
+    "대분류",
+    "중분류",
+    "소분류",
+    "세분류",
+    "능력단위",
+    "직무수행내용",
+    "필요지식",
+    "필요기술",
+    "직무수행태도",
+    "필요자격",
+    "직업기초능력",
+    "비고/근거",
+    "참고사이트",
+)
+_STANDARD_FIELD_INDEX = {
+    "".join(label.split()): index for index, label in enumerate(_STANDARD_FIELD_ORDER)
+}
+
+
+def _standard_order_key(label: str) -> int:
+    """Rank a field by the standard form order; unknown labels keep their tail."""
+
+    return _STANDARD_FIELD_INDEX.get("".join(label.split()), len(_STANDARD_FIELD_ORDER))
+
+
 def field_values_to_markdown(
     field_values: Iterable[tuple[str, str]],
     *,
@@ -307,6 +338,9 @@ def field_values_to_markdown(
     labels = [label for label, _ in rows]
     if len(labels) != len(set(labels)):
         raise ValueError("field labels must be unique")
+    # Stable sort keeps unknown labels in their original order after the known
+    # form rows, so nothing is dropped -- only repositioned to match the form.
+    rows.sort(key=lambda row: _standard_order_key(row[0]))
 
     lines = [
         f"# NCS 기반 채용 직무 설명자료 : {_md(title)}",
