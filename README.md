@@ -1,9 +1,7 @@
 # NCS JD
 
 <p align="center">
-  <a href="reports/demo/ncs-jd-demo.mp4">
-    <img src="reports/demo/ncs-jd-demo-cover.png" alt="NCS JD 50초 홍보 영상" width="100%">
-  </a>
+  <img src="reports/demo/ncs-jd-demo-cover.png" alt="NCS JD 50초 홍보 영상" width="100%">
 </p>
 
 <p align="center">
@@ -15,25 +13,19 @@
 ### 1. 공고문과 예시 양식 입력
 
 <p align="center">
-  <a href="reports/demo/ncs-jd-input.mp4">
-    <img src="reports/demo/ncs-jd-input.gif" alt="공고문과 예시 양식 입력 실행 화면" width="100%">
-  </a>
+  <img src="reports/demo/ncs-jd-input.gif" alt="공고문과 예시 양식 입력 실행 화면" width="100%">
 </p>
 
 ### 2. NCS 세분류·능력단위·근거 연결
 
 <p align="center">
-  <a href="reports/demo/ncs-jd-evidence.mp4">
-    <img src="reports/demo/ncs-jd-evidence.gif" alt="NCS 세분류 능력단위 근거 연결 실행 화면" width="100%">
-  </a>
+  <img src="reports/demo/ncs-jd-evidence.gif" alt="NCS 세분류 능력단위 근거 연결 실행 화면" width="100%">
 </p>
 
 ### 3. 예시 양식 반영과 HWPX 결과
 
 <p align="center">
-  <a href="reports/demo/ncs-jd-result.mp4">
-    <img src="reports/demo/ncs-jd-result.gif" alt="예시 양식 반영과 HWPX 결과 실행 화면" width="100%">
-  </a>
+  <img src="reports/demo/ncs-jd-result.gif" alt="예시 양식 반영과 HWPX 결과 실행 화면" width="100%">
 </p>
 
 > 위 영상은 가상의 행정직 공고문에서 직무수행내용을 추출하고, NCS 사무행정 근거와 예시 양식을 반영해 직무기술서를 만드는 흐름을 Remotion으로 시연합니다. 결과물은 항상 검토용 `draft`이며 채용 결정이나 공식 자격 판정 자료가 아닙니다.
