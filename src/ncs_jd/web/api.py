@@ -15,7 +15,7 @@ import asyncio
 import base64
 import binascii
 import json
-from collections.abc import AsyncIterator, Mapping
+from collections.abc import AsyncIterator, Mapping, Sequence
 from dataclasses import asdict, is_dataclass, replace
 from pathlib import Path
 import re
@@ -79,6 +79,11 @@ from ncs_jd.application.ncs_source import (
     OptionalReference,
     ScopeCandidate,
 )
+from ncs_jd.application.notice_jd_case_library import (
+    NoticeJDCase,
+    examples_for_labels,
+    match_cases,
+)
 from ncs_jd.application.template_mapping import (
     TemplateInspectorPort,
     TemplateMappingError,
@@ -92,6 +97,36 @@ DEFAULT_MAX_TEMPLATE_BYTES = 25 * 1024 * 1024
 _UPLOAD_CHUNK_BYTES = 64 * 1024
 _CONTROL_CHARACTERS = re.compile(r"[\x00-\x1f\x7f]")
 LOCAL_ACTION_HEADER = "X-NCS-JD-Local-Action"
+
+
+def _normalize_example_label(label: str) -> str:
+    return "".join((label or "").split())
+
+
+def _merge_template_examples(
+    template_examples: Sequence[tuple[str, str]],
+    case_examples: Sequence[tuple[str, str]],
+) -> tuple[tuple[str, str], ...]:
+    """Prefer template examples, then fill missing labels from case matches."""
+
+    normalized_seen: set[str] = set()
+    merged: list[tuple[str, str]] = []
+
+    for label, value in template_examples:
+        normalized = _normalize_example_label(label)
+        if not normalized or not value or normalized in normalized_seen:
+            continue
+        merged.append((label, value))
+        normalized_seen.add(normalized)
+
+    for label, value in case_examples:
+        normalized = _normalize_example_label(label)
+        if not normalized or not value or normalized in normalized_seen:
+            continue
+        merged.append((label, value))
+        normalized_seen.add(normalized)
+
+    return tuple(merged)
 
 
 class _ApiModel(BaseModel):
@@ -226,6 +261,10 @@ def create_api_router(
     scope_selectors: Mapping[str, ScopeSelectorPort] | None = None,
     agent_runners: Mapping[str, AgentDraftPort] | None = None,
     template_inspector: TemplateInspectorPort | None = None,
+    case_library: Sequence[NoticeJDCase] | None = None,
+    case_library_top_k: int = 5,
+    case_library_min_confidence: float = 0.4,
+    case_library_per_label_examples: int = 1,
     max_announcement_bytes: int = DEFAULT_MAX_ANNOUNCEMENT_BYTES,
     max_template_bytes: int = DEFAULT_MAX_TEMPLATE_BYTES,
 ) -> APIRouter:
@@ -241,6 +280,16 @@ def create_api_router(
         raise ValueError("upload size limits must be positive")
     available_selectors = dict(scope_selectors or {})
     available_agents = dict(agent_runners or {})
+    resolved_case_library = tuple(case_library or ())
+    resolved_case_library_top_k = max(0, int(case_library_top_k))
+    resolved_case_library_min_confidence = max(
+        0.0, min(1.0, float(case_library_min_confidence))
+    )
+    resolved_case_library_per_label_examples = (
+        max(1, int(case_library_per_label_examples))
+        if int(case_library_per_label_examples) > 0
+        else 0
+    )
 
     router = APIRouter(prefix="/api", tags=["drafting"])
 
@@ -518,6 +567,34 @@ def create_api_router(
                 examples = tuple(pairs)
 
         labels = client_labels or SUPPORTED_TEMPLATE_LABELS
+        if resolved_case_library:
+            matched_cases = match_cases(
+                payload.job_title.strip(),
+                (
+                    *duties,
+                    *(
+                        item.strip()
+                        for item in payload.qualifications
+                        if item.strip()
+                    ),
+                    *(
+                        item.strip()
+                        for item in payload.preferences
+                        if item.strip()
+                    ),
+                ),
+                resolved_case_library,
+                top_k=resolved_case_library_top_k,
+                min_confidence=resolved_case_library_min_confidence,
+            )
+            if matched_cases:
+                case_examples = examples_for_labels(
+                    matched_cases,
+                    labels,
+                    max_per_label=resolved_case_library_per_label_examples,
+                )
+                examples = _merge_template_examples(examples, case_examples)
+
         # The classification cells are read back from the units the run adopts,
         # so the agent is neither asked for them nor allowed to return them.
         labels = tuple(

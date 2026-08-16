@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+import os
 import subprocess
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Sequence
 
 from fastapi import FastAPI, Request, Response
 from fastapi.responses import HTMLResponse
@@ -27,6 +28,7 @@ if TYPE_CHECKING:
     from ncs_jd.application.llm_scope_selection import ScopeSelectorPort
     from ncs_jd.application.ncs_source import NcsSourcePort
     from ncs_jd.application.template_mapping import TemplateMappingPort
+    from ncs_jd.application.notice_jd_case_library import NoticeJDCase
 
 
 DEFAULT_HOST = "127.0.0.1"
@@ -38,6 +40,7 @@ _KORDOC_BRIDGES = (
     _PROJECT_ROOT / "scripts" / "kordoc_bridge.mjs",
     _PROJECT_ROOT / "scripts" / "kordoc_hwpx_bridge.mjs",
 )
+_DEFAULT_CASE_LIBRARY_PATH = _PROJECT_ROOT / "build" / "alio_notice_jd_case_library.json"
 
 
 @dataclass(frozen=True, slots=True)
@@ -102,6 +105,26 @@ def _check_kordoc_readiness(
         return KordocReadiness(False, "kordoc_self_check_failed")
     return KordocReadiness(True)
 
+
+def _resolve_case_library_path(path: str | Path | None) -> Path:
+    override = os.environ.get("NCS_JD_CASE_LIBRARY_PATH")
+    if override:
+        return Path(override).expanduser()
+    if path is not None:
+        return Path(path).expanduser()
+    return _DEFAULT_CASE_LIBRARY_PATH
+
+
+def _load_case_library(
+    path: str | Path | None,
+) -> tuple["NoticeJDCase", ...]:
+    try:
+        from ncs_jd.application.notice_jd_case_library import load_case_library
+    except Exception:
+        return ()
+
+    return load_case_library(_resolve_case_library_path(path))
+
 def _ui_contract(
     *,
     backend_connected: bool = False,
@@ -162,6 +185,11 @@ def create_app(
     cli_template_mapper: TemplateMappingPort | None = None,
     scope_selectors: Mapping[str, ScopeSelectorPort] | None = None,
     agent_runners: Mapping[str, AgentDraftPort] | None = None,
+    case_library: Sequence[NoticeJDCase] | None = None,
+    case_library_path: str | Path | None = None,
+    case_library_top_k: int = 5,
+    case_library_min_confidence: float = 0.4,
+    case_library_per_label_examples: int = 1,
     kordoc_readiness: KordocReadiness | None = None,
 ) -> FastAPI:
     """Create the local-only UI, optionally with injected drafting backends."""
@@ -180,6 +208,9 @@ def create_app(
         raise ValueError("agent_runners requires all drafting backends")
     if kordoc_readiness is not None and not backend_configured:
         raise ValueError("kordoc_readiness requires all drafting backends")
+    resolved_case_library = (
+        tuple(case_library) if case_library is not None else _load_case_library(case_library_path)
+    )
     backend_connected = backend_configured and (
         kordoc_readiness is None or kordoc_readiness.ready
     )
@@ -223,6 +254,10 @@ def create_app(
                 template_inspector=(
                     renderer if isinstance(renderer, TemplateInspectorPort) else None
                 ),
+                case_library=resolved_case_library,
+                case_library_top_k=case_library_top_k,
+                case_library_min_confidence=case_library_min_confidence,
+                case_library_per_label_examples=case_library_per_label_examples,
             )
         )
 
@@ -314,6 +349,11 @@ def create_connected_app(
     renderer: DocumentRendererPort | None = None,
     template_directory: str | Path | None = None,
     static_directory: str | Path | None = None,
+    case_library: Sequence[NoticeJDCase] | None = None,
+    case_library_path: str | Path | None = None,
+    case_library_top_k: int = 5,
+    case_library_min_confidence: float = 0.4,
+    case_library_per_label_examples: int = 1,
 ) -> FastAPI:
     """Compose the production-local Kordoc, NCS MCP, and HWPX adapters."""
 
@@ -350,6 +390,11 @@ def create_connected_app(
         cli_template_mapper=cli_template_mapper,
         scope_selectors=scope_selectors,
         agent_runners=_build_agent_runners(),
+        case_library=case_library,
+        case_library_path=case_library_path,
+        case_library_top_k=case_library_top_k,
+        case_library_min_confidence=case_library_min_confidence,
+        case_library_per_label_examples=case_library_per_label_examples,
         kordoc_readiness=readiness,
     )
     app.include_router(create_llm_api_router(llm_cli=llm_cli))
