@@ -25,6 +25,10 @@ _ROLE_LABELS = (
     "모집분야",
     "직무명",
     "채용직무",
+    "채용직무명",
+    "근무분야",
+    "직무",
+    "직무명칭",
     "모집직무",
     "지원분야",
     "직종",
@@ -33,8 +37,24 @@ _ROLE_LABELS = (
     "채용직종",
     "모집직종",
 )
-_RECRUITMENT_REASON_LABELS = ("채용사유", "채용 사유", "채용목적", "채용 목적")
-_DUTY_LABELS = ("담당업무", "수행업무", "직무수행내용", "주요업무", "담당직무")
+_RECRUITMENT_REASON_LABELS = (
+    "채용사유",
+    "채용 사유",
+    "채용목적",
+    "채용 목적",
+    "채용개요",
+    "채용개요 및 배경",
+)
+_DUTY_LABELS = (
+    "담당업무",
+    "수행업무",
+    "직무수행내용",
+    "직무내용",
+    "주요업무",
+    "주요업무내용",
+    "담당직무",
+    "업무내용",
+)
 _QUALIFICATION_LABELS = (
     "지원자격",
     "응시자격",
@@ -46,12 +66,19 @@ _QUALIFICATION_LABELS = (
     "지원요건",
     "응시요건",
     "응시자격요건",
+    "학력요건",
+    "경력요건",
+    "학력 및 경력요건",
+    "자격사항",
     "응시 자격 요건",
 )
 _PREFERENCE_LABELS = (
     "우대사항",
     "우대조건",
+    "우대요건",
+    "우대자격",
     "가점사항",
+    "가점요건",
     "가점및우대사항",
     "가점 및 우대 사항",
 )
@@ -143,10 +170,11 @@ def extract_announcement(document: ParsedDocument) -> AnnouncementExtraction:
     """Extract explicitly stated announcement fields without inference or approval."""
 
     builders: list[_CandidateBuilder] = []
+    unresolved_labels: list[str] = []
     for block in document.blocks:
         if block.block_type == "table" and (block.table_rows or block.markdown.strip()):
             _extract_table(block, builders)
-    _extract_text_blocks(document.blocks, builders)
+    _extract_text_blocks(document.blocks, builders, unresolved_labels)
 
     builders = [builder for builder in builders if not builder.is_empty()]
     candidates = tuple(
@@ -161,7 +189,7 @@ def extract_announcement(document: ParsedDocument) -> AnnouncementExtraction:
         )
         for index, builder in enumerate(builders)
     )
-    flags = _review_flags(document, candidates)
+    flags = _review_flags(document, candidates, tuple(dict.fromkeys(unresolved_labels)))
     return AnnouncementExtraction(document.source_name, candidates, flags)
 
 
@@ -219,7 +247,11 @@ def _extract_table(block: ParsedBlock, builders: list[_CandidateBuilder]) -> Non
             _add_values(current, kind, value, block.locator, "table_cell", 0.97)
 
 
-def _extract_text_blocks(blocks: tuple[ParsedBlock, ...], builders: list[_CandidateBuilder]) -> None:
+def _extract_text_blocks(
+    blocks: tuple[ParsedBlock, ...],
+    builders: list[_CandidateBuilder],
+    unresolved_labels: list[str],
+) -> None:
     current = builders[-1] if builders else None
     section: ExtractionField | None = None
     for block in blocks:
@@ -246,6 +278,9 @@ def _extract_text_blocks(blocks: tuple[ParsedBlock, ...], builders: list[_Candid
                         current = current or _last_or_new(builders)
                         _add_values(current, label, value, block.locator, "explicit_label", 0.95)
                 continue
+            unresolved = _extract_unknown_labeled_line(line)
+            if unresolved is not None:
+                unresolved_labels.append(unresolved)
             heading_kind = _label_kind(line)
             if heading_kind is not None:
                 section = heading_kind
@@ -345,6 +380,28 @@ def _split_labeled_line(line: str) -> tuple[ExtractionField | None, str]:
     return None, ""
 
 
+def _extract_unknown_labeled_line(line: str) -> str | None:
+    for match in _LABEL_SEPARATOR.finditer(line):
+        label = line[: match.start()].strip()
+        value = line[match.end() :].strip()
+        if not label or not value:
+            continue
+        if _label_kind(label) is not None:
+            continue
+        if len(label) < 2 or len(value) > 800:
+            continue
+        if not re.search(r"[가-힣]", label):
+            continue
+        normalized = _normalized_label(label)
+        if (
+            not normalized
+            or normalized in {"공고문", "입사지원서", "직무기술서", "첨부", "기타첨부파일", "원문", "근무분야"}
+        ):
+            continue
+        return label
+    return None
+
+
 def _label_kind(value: str) -> ExtractionField | None:
     normalized = _normalized_label(value)
     if normalized.startswith("및"):
@@ -407,6 +464,7 @@ def _is_attachment_only(text: str) -> bool:
 def _review_flags(
     document: ParsedDocument,
     candidates: tuple[RoleCandidate, ...],
+    unresolved_labels: tuple[str, ...],
 ) -> tuple[AnnouncementReviewFlag, ...]:
     flags: list[AnnouncementReviewFlag] = []
     corpus = "\n".join(filter(None, (document.markdown, *(block.text for block in document.blocks))))
@@ -478,6 +536,17 @@ def _review_flags(
                 "announcement_fields_missing",
                 "warning",
                 "채용분야, 업무, 자격 또는 우대사항을 결정적으로 찾지 못했습니다.",
+            )
+        )
+    if unresolved_labels:
+        sample = ", ".join(unresolved_labels[:4])
+        if len(unresolved_labels) > 4:
+            sample = f"{sample} 외 {len(unresolved_labels) - 4}건"
+        flags.append(
+            AnnouncementReviewFlag(
+                "unrecognized_section_labels",
+                "info",
+                f"인식되지 않은 라벨 패턴입니다: {sample}. 필요 시 다음 라벨을 추가해 보강하세요.",
             )
         )
     return tuple(flags)
