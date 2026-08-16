@@ -26,9 +26,12 @@ def test_markdown_uses_standard_title_tables_and_separate_document_objects() -> 
     assert "## 직무기술서" in markdown
     assert "## 직무명세서" in markdown
     assert markdown.index("## 직무기술서") < markdown.index("## 직무명세서")
-    assert "| 능력단위 | • 인력채용 (0202020103_23v4, 수준 5) |" in markdown
-    assert "| 직무수행내용 | • 채용 계획 수립: 채용 필요 인력과 절차를 검토한다. |" in markdown
-    assert "| 필요지식 | • 채용 절차에 관한 지식 |" in markdown
+    # Content is grouped by subcategory (○) with · bullets, matching the
+    # curated reference document; unit codes move to the 비고/근거 basis row.
+    assert "| 능력단위 | ○ (인사)<br>· 인력채용 |" in markdown
+    assert "| 직무수행내용 | ○ (인사)<br>· 채용 계획 수립: 채용 필요 인력과 절차를 검토한다. |" in markdown
+    assert "| 필요지식 | ○ (인사)<br>· 채용 절차에 관한 지식 |" in markdown
+    assert "○ 인사 : 0202020103_23v4" in markdown
     assert "| 필요기술 | 조직 입력 필요 |" in markdown
     assert "| 직무수행태도 | 조직 입력 필요 |" in markdown
     assert "| 직업기초능력 | 조직 입력 필요 |" in markdown
@@ -76,9 +79,10 @@ def test_reference_previews_are_not_dumped_and_ids_flags_stay_in_evidence_rows()
     # This string exists only in ReferenceRecord.text_preview, not in a
     # presentation field of the validated JobProfile.
     assert "채용 필요 인력을 파악할 수 있다." not in markdown
-    for line in markdown.splitlines():
-        if "ref-" in line or "검토 플래그" in line:
-            assert line.startswith("| 비고/근거 |")
+    # Internal provenance handles must never reach the reader; the auditable
+    # trail is the NCS unit codes in the 비고/근거 basis row instead.
+    assert "ref-unit" not in markdown
+    assert "출처 ID" not in markdown
 
 
 def test_markdown_is_stable_and_changes_only_with_profile_presentation_fields() -> None:
@@ -121,5 +125,7 @@ def test_draft_disclaimer_and_safe_exact_template_values_are_present() -> None:
         "비고/근거",
     )
     assert "ref-unit-1" not in values["직무수행내용"]
-    assert "ref-unit-1" in values["비고/근거"]
+    # The basis row carries NCS unit codes, never internal ref IDs.
+    assert not any("ref-unit" in value for value in values.values())
+    assert "0202020103_23v4" in values["비고/근거"]
     assert "검토용 초안(draft)" in values["비고/근거"]

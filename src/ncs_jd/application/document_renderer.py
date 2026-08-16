@@ -7,9 +7,9 @@ record.
 
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
-from typing import Literal, Protocol, runtime_checkable
+from typing import Any, Literal, Protocol, runtime_checkable
 
 from ncs_jd.domain.job_profile import JobProfile, ReviewFlag
 
@@ -243,31 +243,31 @@ def job_profile_to_markdown(profile: JobProfile) -> str:
             "| --- | --- |",
             f"| 직무명 | {_md(title)} |",
             f"| 직무목적 | {_md(jd.job_purpose.text)} |",
-            f"| 능력단위 | {_items(unit.unit_name + _unit_suffix(unit.unit_code, unit.unit_level) for unit in profile.scope_selection.included_units)} |",
+            f"| 능력단위 | {_md(_grouped_by_subcategory(profile, profile.scope_selection.included_units, key=lambda unit: unit.unit_code, text=lambda unit: unit.unit_name))} |",
             f"| 주요책무 | {_items(f'{item.title}: {item.summary}' for item in jd.duties)} |",
-            f"| 직무수행내용 | {_items(f'{item.title}: {item.description}' for item in jd.tasks)} |",
+            f"| 직무수행내용 | {_md(_grouped_by_subcategory(profile, jd.tasks, text=lambda item: f'{item.title}: {item.description}'))} |",
             f"| 핵심책임 | {_items(item.text for item in jd.responsibilities)} |",
             f"| 의사결정 권한 | {_items(item.text for item in jd.decision_authority)} |",
             f"| KPI·기대성과 | {_items(item.text for item in jd.kpis)} |",
             f"| 협업대상 | {_items(item.text for item in jd.collaboration)} |",
             f"| 보고관계 | {_items(item.text for item in jd.reporting_relationships)} |",
-            f"| 비고/근거 | {_evidence_note(_job_description_refs(profile), _flags_for(profile, ('scope_selection', 'job_description')))} |",
+            f"| 비고/근거 | {_md(_ncs_basis_note(profile, _flags_for(profile, ('scope_selection', 'job_description'))))} |",
             "",
             "## 직무명세서",
             "",
             "| 항목 | 내용 |",
             "| --- | --- |",
             f"| 목표수준 | {_target_level(profile)} |",
-            f"| 필요지식 | {_items(item.text for item in spec.knowledge)} |",
-            f"| 필요기술 | {_items(item.text for item in spec.skills)} |",
-            f"| 직무수행태도 | {_items(item.text for item in spec.attitudes)} |",
+            f"| 필요지식 | {_md(_grouped_by_subcategory(profile, spec.knowledge))} |",
+            f"| 필요기술 | {_md(_grouped_by_subcategory(profile, spec.skills))} |",
+            f"| 직무수행태도 | {_md(_grouped_by_subcategory(profile, spec.attitudes))} |",
             f"| 경력요건 | {_items(item.text for item in spec.experience_requirements)} |",
             f"| 학력요건 | {_items(item.text for item in spec.education_requirements)} |",
             f"| 공고 자격조건 | {_items(item.text for item in spec.qualification_requirements)} |",
             f"| 공고 우대사항 | {_items(item.text for item in spec.preference_requirements)} |",
             f"| 자격 참고 | {_advisory_items(item.text for item in spec.qualification_references)} |",
             f"| 직업기초능력 | {_advisory_items(item.text for item in spec.job_base_references)} |",
-            f"| 비고/근거 | {_evidence_note(_person_specification_refs(profile), _flags_for(profile, ('person_specification',)))} |",
+            f"| 비고/근거 | {_md(_ncs_basis_note(profile, _flags_for(profile, ('person_specification',))))} |",
             "",
             "---",
             "검토 후 조직의 승인 절차를 별도로 거쳐야 합니다.",
@@ -333,32 +333,31 @@ def job_profile_to_template_values(profile: JobProfile) -> dict[str, str]:
     jd = profile.job_description
     spec = profile.person_specification
     all_flags = tuple(profile.review_flags)
-    all_refs = _ordered_unique(
-        ref
-        for groups in (_job_description_refs(profile), _person_specification_refs(profile))
-        for ref in groups
-    )
     return {
         "채용분야": jd.job_title.text,
         "대분류": "\n".join(_coded_label(path.major_code, labels[0]) for path, labels in zip(paths, split_labels, strict=True)),
         "중분류": "\n".join(_coded_label(path.middle_code, labels[1]) for path, labels in zip(paths, split_labels, strict=True)),
         "소분류": "\n".join(_coded_label(path.small_code, labels[2]) for path, labels in zip(paths, split_labels, strict=True)),
         "세분류": "\n".join(_coded_label(path.sub_code, labels[3]) for path, labels in zip(paths, split_labels, strict=True)),
-        "능력단위": _plain_items(
-            unit.unit_name + _unit_suffix(unit.unit_code, unit.unit_level)
-            for unit in profile.scope_selection.included_units
+        "능력단위": _grouped_by_subcategory(
+            profile,
+            profile.scope_selection.included_units,
+            key=lambda unit: unit.unit_code,
+            text=lambda unit: unit.unit_name,
         ),
-        "직무수행내용": _plain_items(f"{item.title}: {item.description}" for item in jd.tasks),
-        "필요지식": _plain_items(item.text for item in spec.knowledge),
-        "필요기술": _plain_items(item.text for item in spec.skills),
-        "직무수행태도": _plain_items(item.text for item in spec.attitudes),
+        "직무수행내용": _grouped_by_subcategory(
+            profile, jd.tasks, text=lambda item: f"{item.title}: {item.description}"
+        ),
+        "필요지식": _grouped_by_subcategory(profile, spec.knowledge),
+        "필요기술": _grouped_by_subcategory(profile, spec.skills),
+        "직무수행태도": _grouped_by_subcategory(profile, spec.attitudes),
         "필요자격": _plain_items(item.text for item in spec.qualification_requirements),
         "직업기초능력": _plain_advisory(item.text for item in spec.job_base_references),
         "비고/근거": "\n".join(
             part
             for part in (
                 _announcement_requirements_note(profile),
-                _plain_evidence_note(all_refs, all_flags),
+                _ncs_basis_note(profile, all_flags),
                 DRAFT_DISCLAIMER,
             )
             if part
@@ -372,13 +371,126 @@ def _classification_labels(label: str) -> tuple[str, str, str, str]:
     return tuple(parts[:4])  # type: ignore[return-value]
 
 
+def _subcategory_digits(code: str) -> str:
+    """The first eight digits of an NCS code identify its subcategory.
+
+    A unit code like ``1901070111_22v3`` shares its ``19010701`` prefix with the
+    ``19·01·07·01`` classification path.  Synthetic fixtures use non-numeric
+    codes, which yield ``""`` and fall back to an ungrouped list.
+    """
+
+    digits = "".join(ch for ch in str(code) if ch.isdigit())
+    return digits[:8] if len(digits) >= 8 else ""
+
+
+def _subcategory_index(profile: JobProfile) -> tuple[dict[str, str], dict[str, str], list[str]]:
+    """Map codes to a subcategory name, keyed by the shared 8-digit prefix.
+
+    Returns ``(unit_code -> subcat_key, subcat_key -> 세분류명, ordered keys)``.
+    """
+
+    order: list[str] = []
+    names: dict[str, str] = {}
+    for path in profile.scope_selection.classification_paths:
+        key = _subcategory_digits(
+            f"{path.major_code}{path.middle_code}{path.small_code}{path.sub_code}"
+        )
+        if not key or key in names:
+            continue
+        names[key] = _classification_labels(path.label)[3] or path.label
+        order.append(key)
+    unit_keys = {
+        unit.unit_code: _subcategory_digits(unit.unit_code)
+        for unit in profile.scope_selection.included_units
+    }
+    return unit_keys, names, order
+
+
+def _grouped_by_subcategory(
+    profile: JobProfile,
+    items: Iterable[object],
+    *,
+    key: Callable[[Any], str] | None = None,
+    text: Callable[[Any], str] = lambda item: item.text,
+) -> str:
+    """Render items as ``○ (세분류)`` groups with ``·`` bullets, deduplicated.
+
+    This mirrors the reference document a curated run produces: evidence stays in
+    the subcategory it came from and repeated phrases collapse.  When an item's
+    subcategory cannot be resolved -- synthetic fixtures, or KSA with no
+    resolvable unit -- the whole field degrades to a flat bullet list rather than
+    inventing a grouping.
+    """
+
+    ref_to_unit = {ref.ref_id: ref.unit_code for ref in profile.references if ref.unit_code}
+    unit_keys, names, order = _subcategory_index(profile)
+
+    def item_key(item: object) -> str:
+        if key is not None:
+            return unit_keys.get(key(item), _subcategory_digits(key(item)))
+        for ref in getattr(item, "source_refs", ()):  # first resolvable unit wins
+            unit = ref_to_unit.get(ref)
+            if unit and unit_keys.get(unit):
+                return unit_keys[unit]
+        return ""
+
+    buckets: dict[str, list[str]] = {}
+    for item in items:
+        value = str(text(item)).strip()
+        if not value:
+            continue
+        bucket = buckets.setdefault(item_key(item), [])
+        if value not in bucket:  # dedupe repeated KSA phrasing within a group
+            bucket.append(value)
+
+    if not buckets:
+        return "조직 입력 필요"
+    # Fall back to a flat list unless at least one item resolved to a named group.
+    if not any(k in names for k in buckets):
+        return _plain_items(v for bucket in buckets.values() for v in bucket)
+
+    ordered_keys = [k for k in order if k in buckets] + [
+        k for k in buckets if k not in names
+    ]
+    lines: list[str] = []
+    for k in ordered_keys:
+        if k in names:
+            lines.append(f"○ ({names[k]})")
+        elif lines:  # ungrouped remainder trails the named groups
+            lines.append("○ (기타)")
+        lines.extend(f"· {value}" for value in buckets[k])
+    return "\n".join(lines)
+
+
+def _ncs_basis_note(profile: JobProfile, flags: tuple[ReviewFlag, ...]) -> str:
+    """List the adopted unit codes per subcategory -- never internal ref IDs.
+
+    The old note dumped ``ref-unit-…`` identifiers straight into the document.
+    Those are internal provenance handles, meaningless to a reader; the auditable
+    trail a reader needs is the NCS unit codes, grouped like the reference form.
+    """
+
+    unit_keys, names, order = _subcategory_index(profile)
+    by_key: dict[str, list[str]] = {}
+    for unit in profile.scope_selection.included_units:
+        by_key.setdefault(unit_keys.get(unit.unit_code, ""), []).append(unit.unit_code)
+
+    lines: list[str] = ["[NCS 근거]"]
+    ordered_keys = [k for k in order if k in by_key] + [k for k in by_key if k not in names]
+    for k in ordered_keys:
+        heading = names.get(k, "기타")
+        lines.append(f"○ {heading} : " + ", ".join(by_key[k]))
+    lines.append(
+        "직무수행내용·필요지식·필요기술·직무수행태도는 위 능력단위의 정의 및 "
+        "능력단위요소별 KSA에서 도출하였습니다."
+    )
+    for flag in flags:
+        lines.append(f"※ 검토 필요({flag.code.value}): {flag.message}")
+    return "\n".join(lines)
+
+
 def _coded_label(code: str, label: str) -> str:
     return f"{code}. {label}" if label else code
-
-
-def _unit_suffix(code: str, level: str | None) -> str:
-    level_text = f", 수준 {level}" if level else ""
-    return f" ({code}{level_text})"
 
 
 def _md(value: object) -> str:
@@ -409,63 +521,8 @@ def _plain_advisory(values: Iterable[object]) -> str:
     return "\n".join(f"• {value} (참고 전용, 필수조건 아님)" for value in normalized) if normalized else "조직 입력 필요"
 
 
-def _ordered_unique(values: Iterable[object]) -> tuple[str, ...]:
-    seen: set[str] = set()
-    result: list[str] = []
-    for value in values:
-        text = str(value)
-        if text not in seen:
-            seen.add(text)
-            result.append(text)
-    return tuple(result)
-
-
-def _job_description_refs(profile: JobProfile) -> tuple[str, ...]:
-    jd = profile.job_description
-    groups = [jd.job_purpose.source_refs]
-    groups.extend(item.source_refs for item in jd.duties)
-    groups.extend(item.source_refs for item in jd.tasks)
-    groups.extend(item.source_refs for field_name in ("responsibilities", "decision_authority", "kpis", "collaboration", "reporting_relationships") for item in getattr(jd, field_name))
-    return _ordered_unique(ref for group in groups for ref in group)
-
-
-def _person_specification_refs(profile: JobProfile) -> tuple[str, ...]:
-    spec = profile.person_specification
-    groups = []
-    for field_name in (
-        "knowledge",
-        "skills",
-        "attitudes",
-        "experience_requirements",
-        "education_requirements",
-        "qualification_requirements",
-        "preference_requirements",
-        "qualification_references",
-        "job_base_references",
-    ):
-        groups.extend(item.source_refs for item in getattr(spec, field_name))
-    return _ordered_unique(ref for group in groups for ref in group)
-
-
 def _flags_for(profile: JobProfile, prefixes: tuple[str, ...]) -> tuple[ReviewFlag, ...]:
     return tuple(flag for flag in profile.review_flags if flag.section.startswith(prefixes))
-
-
-def _evidence_note(refs: tuple[str, ...], flags: tuple[ReviewFlag, ...]) -> str:
-    return _md(_plain_evidence_note(refs, flags)).replace("\n", "<br>")
-
-
-def _plain_evidence_note(refs: tuple[str, ...], flags: tuple[ReviewFlag, ...]) -> str:
-    parts: list[str] = []
-    if refs:
-        parts.append("출처 ID: " + ", ".join(refs))
-    else:
-        parts.append("출처 ID: 없음")
-    if flags:
-        parts.extend(f"검토 플래그 {flag.code.value}: {flag.message}" for flag in flags)
-    else:
-        parts.append("검토 플래그: 없음")
-    return "\n".join(parts)
 
 
 def _target_level(profile: JobProfile) -> str:
